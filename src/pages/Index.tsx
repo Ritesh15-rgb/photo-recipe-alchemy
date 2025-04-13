@@ -40,13 +40,45 @@ const mockRecipes: Recipe[] = [
     calories: 120,
     imageUrl: 'https://images.unsplash.com/photo-1568158879083-c42860933ed7',
     category: 'Fruit',
+  },
+  {
+    id: '5',
+    title: 'Avocado Toast',
+    description: 'Perfect breakfast option',
+    calories: 180,
+    imageUrl: 'https://images.unsplash.com/photo-1588137378633-dea1168d0ce6',
+    category: 'Breakfast',
+  },
+  {
+    id: '6',
+    title: 'Grilled Salmon',
+    description: 'Fresh and healthy seafood',
+    calories: 220,
+    imageUrl: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2',
+    category: 'Seafood',
+  },
+  {
+    id: '7',
+    title: 'Chocolate Cake',
+    description: 'Rich and decadent dessert',
+    calories: 350,
+    imageUrl: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587',
+    category: 'Dessert',
+  },
+  {
+    id: '8',
+    title: 'Iced Coffee',
+    description: 'Refreshing cold brew',
+    calories: 90,
+    imageUrl: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735',
+    category: 'Beverages',
   }
 ];
 
-type Category = 'Vegetable' | 'Rice' | 'Fruit';
+type Category = 'All' | 'Vegetable' | 'Rice' | 'Fruit' | 'Breakfast' | 'Seafood' | 'Fast Food' | 'Dessert' | 'Beverages';
 
 const Index = () => {
-  const [activeCategory, setActiveCategory] = useState<Category>('Vegetable');
+  const [activeCategory, setActiveCategory] = useState<Category>('All');
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const { toast } = useToast();
 
@@ -62,14 +94,17 @@ const Index = () => {
     });
   }, []);
   
-  const featuredRecipes = recipes.filter(r => r.category === activeCategory);
-  const popularRecipes = recipes.filter(r => r.id === '3');
+  const featuredRecipes = activeCategory === 'All' 
+    ? recipes 
+    : recipes.filter(r => r.category === activeCategory);
+    
+  const popularRecipes = recipes.filter(r => r.calories > 200);
 
   return (
     <div className="max-w-md mx-auto px-4 pb-20 bg-gray-50 min-h-screen">
       <Navbar />
       
-      <div className="mb-6">
+      <div className="mb-4">
         <h1 className="text-4xl font-bold">Springy Salads</h1>
         <p className="text-gray-400">Healthy and nutritious food recipes</p>
       </div>
@@ -83,6 +118,7 @@ const Index = () => {
         <RecipeGrid 
           recipes={featuredRecipes}
           category={activeCategory} 
+          title={`${activeCategory} Recipes`}
         />
       )}
       
