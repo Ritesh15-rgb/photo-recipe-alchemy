@@ -1,9 +1,10 @@
-
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Clock, Users, Heart } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Clock, Users, Heart, Upload, Camera, Play } from 'lucide-react';
 import { Recipe } from '@/components/RecipeCard';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { uploadFoodImage, generateRecipeFromImage } from '@/services/recipeService';
 
 const mockRecipes: Recipe[] = [
   {
@@ -46,6 +47,11 @@ const mockRecipeDetails: Record<string, {
   servings: number;
   ingredients: string[];
   instructions: string[];
+  nutrition?: {
+    calories: number;
+    carbs: number;
+    protein: number;
+  }
 }> = {
   '1': {
     prepTime: '30 minutes',
@@ -129,11 +135,49 @@ const mockRecipeDetails: Record<string, {
   },
 };
 
+// Adding the new Asparagus recipe from the image
+mockRecipes.push({
+  id: '5',
+  title: 'Asparagus',
+  description: 'White Onion, Fennel, and watercress Salad',
+  calories: 190,
+  imageUrl: '/lovable-uploads/c99bb49b-d3cf-4015-a35e-d3b1303413e8.png',
+  category: 'Vegetable',
+});
+
+mockRecipeDetails['5'] = {
+  prepTime: '30 minutes',
+  servings: 2,
+  nutrition: {
+    calories: 190,
+    carbs: 35,
+    protein: 12,
+  },
+  ingredients: [
+    '2 cups pecans, divided',
+    '1 tablespoon unsalted butter, melted',
+    '1/4 teaspoon kosher salt, plus more',
+    '3 tablespoons fresh lemon juice',
+    '2 tablespoons olive oil',
+    '1/2 teaspoon honey'
+  ],
+  instructions: [
+    'In a medium bowl, combine the marinade ingredients and mix well. Chop the chicken into bite-sized pieces and toss with the marinade. Cover and chill in the fridge for 1 hr or overnight.',
+    'Preheat oven to 425°F (220°C).',
+    'Arrange asparagus on a baking sheet, drizzle with olive oil, and season with salt and pepper.',
+    'Roast for 12-15 minutes until tender but still crisp.',
+    'Plate with salmon and garnish with fresh herbs.'
+  ],
+};
+
 const RecipeDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [recipeDetails, setRecipeDetails] = useState<any>(null);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showFileInput, setShowFileInput] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -147,14 +191,6 @@ const RecipeDetail = () => {
     }
   }, [id]);
 
-  if (!recipe || !recipeDetails) {
-    return (
-      <div className="max-w-md mx-auto px-4 py-8 flex justify-center items-center min-h-screen">
-        <p>Loading recipe details...</p>
-      </div>
-    );
-  }
-
   const toggleFavorite = () => {
     setIsFavorite(!isFavorite);
     toast({
@@ -163,8 +199,48 @@ const RecipeDetail = () => {
     });
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      const imageUrl = await uploadFoodImage(file);
+      
+      toast({
+        title: "Image uploaded successfully!",
+        description: "Generating recipe from your food photo...",
+        duration: 3000,
+      });
+      
+      // Generate recipe from image
+      const recipe = await generateRecipeFromImage(imageUrl);
+      
+      // Navigate to the new recipe page
+      navigate('/recipe/1'); // In a real app, navigate to the new recipe ID
+    } catch (error) {
+      toast({
+        title: "Upload failed",
+        description: "There was an error uploading your image.",
+        variant: "destructive",
+      });
+      console.error("Upload error:", error);
+    } finally {
+      setUploading(false);
+      setShowFileInput(false);
+    }
+  };
+
+  if (!recipe || !recipeDetails) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-8 flex justify-center items-center min-h-screen">
+        <p>Loading recipe details...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-md mx-auto px-4 pb-20 bg-gray-50 min-h-screen">
+    <div className="max-w-md mx-auto px-4 pb-20 bg-white min-h-screen">
       <div className="py-4 flex items-center justify-between">
         <Link to="/" className="p-2">
           <ArrowLeft className="h-6 w-6" />
@@ -180,51 +256,92 @@ const RecipeDetail = () => {
       </div>
 
       <div className="mb-6">
-        <img 
-          src={recipe.imageUrl} 
-          alt={recipe.title} 
-          className="w-full h-64 object-cover rounded-3xl mb-4"
-        />
+        <h1 className="text-4xl font-bold mb-1">{recipe.title}</h1>
+        <p className="text-gray-400 mb-6">{recipe.description}</p>
         
-        <h1 className="text-3xl font-bold mb-2">{recipe.title}</h1>
-        <p className="text-gray-500 mb-4">{recipe.description}</p>
+        {/* Nutrition Section */}
+        <h2 className="text-2xl font-bold mb-4">Nutritions</h2>
+        <div className="flex gap-4 mb-8 overflow-x-auto pb-2">
+          <div className="bg-gray-50 rounded-2xl p-4 flex flex-col items-center min-w-[120px]">
+            <div className="text-2xl font-bold">{recipeDetails.nutrition?.calories || recipe.calories}</div>
+            <div className="text-gray-400">Calories</div>
+            <div className="text-gray-300 text-sm">Kcal</div>
+          </div>
+          
+          <div className="bg-gray-50 rounded-2xl p-4 flex flex-col items-center min-w-[120px]">
+            <div className="text-2xl font-bold">{recipeDetails.nutrition?.carbs || 25}</div>
+            <div className="text-gray-400">Carbo</div>
+            <div className="text-gray-300 text-sm">g</div>
+          </div>
+          
+          <div className="bg-gray-50 rounded-2xl p-4 flex flex-col items-center min-w-[120px]">
+            <div className="text-2xl font-bold">{recipeDetails.nutrition?.protein || 15}</div>
+            <div className="text-gray-400">Protein</div>
+            <div className="text-gray-300 text-sm">g</div>
+          </div>
+        </div>
         
-        <div className="flex items-center gap-6 mb-6">
-          <div className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-primary" />
-            <span>{recipeDetails.prepTime}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-primary" />
-            <span>{recipeDetails.servings} servings</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-medium">{recipe.calories} Kcal</span>
+        <div className="relative mb-8">
+          <img 
+            src={recipe.imageUrl} 
+            alt={recipe.title} 
+            className="w-full h-64 object-cover rounded-3xl"
+          />
+          <div className="absolute top-2 right-2 flex gap-2">
+            <input 
+              type="file"
+              accept="image/*"
+              className="hidden"
+              id="photo-upload"
+              onChange={handleFileChange}
+            />
+            <Button 
+              variant="outline"
+              size="sm"
+              className="bg-white hover:bg-gray-100"
+              onClick={() => setShowFileInput(!showFileInput)}
+            >
+              <Upload className="h-4 w-4 mr-1" />
+              Upload Similar
+            </Button>
+            {showFileInput && (
+              <div className="absolute right-0 top-10 bg-white p-4 rounded-lg shadow-lg z-10">
+                <label htmlFor="photo-upload" className="cursor-pointer">
+                  <Button className="w-full">
+                    {uploading ? "Uploading..." : "Choose Photo"}
+                  </Button>
+                </label>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
+      {/* Ingredients Section */}
       <div className="mb-8">
-        <h2 className="text-xl font-bold mb-3">Ingredients</h2>
+        <h2 className="text-2xl font-bold mb-4">Ingredients</h2>
         <ul className="space-y-2">
           {recipeDetails.ingredients.map((ingredient: string, index: number) => (
-            <li key={index} className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-primary"></div>
-              <span>{ingredient}</span>
+            <li key={index} className="text-gray-400">
+              {ingredient}
             </li>
           ))}
         </ul>
       </div>
 
-      <div>
-        <h2 className="text-xl font-bold mb-3">Instructions</h2>
-        <ol className="space-y-4">
+      {/* Recipe Preparation */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Recipe preparation</h2>
+        <ol className="space-y-6">
           {recipeDetails.instructions.map((instruction: string, index: number) => (
-            <li key={index} className="flex gap-3">
-              <div className="bg-primary text-white rounded-full w-6 h-6 flex-shrink-0 flex items-center justify-center">
-                {index + 1}
-              </div>
-              <p>{instruction}</p>
+            <li key={index} className="relative">
+              <div className="text-gray-300 mb-1">STEP {index + 1}</div>
+              <p className="text-gray-400">{instruction}</p>
+              {index === 0 && (
+                <Button className="mt-4 bg-green-500 hover:bg-green-600">
+                  <Play className="h-5 w-5 mr-2" /> Watch Video
+                </Button>
+              )}
             </li>
           ))}
         </ol>
