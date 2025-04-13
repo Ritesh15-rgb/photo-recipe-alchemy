@@ -58,15 +58,26 @@
 
 @layer components {
   .category-chip {
-    @apply py-2 px-6 rounded-full flex items-center justify-center gap-2 text-sm font-medium transition-all;
+    @apply py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-sm font-medium transition-all;
   }
 
   .category-chip-active {
-    @apply bg-primary text-white;
+    @apply bg-gradient-to-r from-primary to-green-400 text-white;
   }
 
   .category-chip-inactive {
     @apply bg-white text-gray-700 shadow-sm;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
 
