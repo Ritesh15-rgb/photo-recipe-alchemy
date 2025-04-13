@@ -70,7 +70,7 @@ const Index = () => {
       <Navbar />
       
       <div className="mb-6">
-        <h1 className="text-4xl font-bold">Springy Salads</h1>
+        <h1 className="text-4xl font-bold">Pic 2 Plate</h1>
         <p className="text-gray-400">Healthy and nutritious food recipes</p>
       </div>
       
