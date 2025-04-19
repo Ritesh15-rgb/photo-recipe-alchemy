@@ -40,10 +40,34 @@ const mockRecipes: Recipe[] = [
     calories: 120,
     imageUrl: 'https://images.unsplash.com/photo-1568158879083-c42860933ed7',
     category: 'Fruit',
-  }
+  },
+  {
+    id: '5',
+    title: 'Egg Fried Rice',
+    description: 'Tasty and fluffy rice with eggs',
+    calories: 220,
+    imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836',
+    category: 'Eggs',
+  },
+  {
+    id: '6',
+    title: 'Tomato Soup',
+    description: 'Rich and creamy tomato flavor',
+    calories: 110,
+    imageUrl: 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c',
+    category: 'Soups',
+  },
+  {
+    id: '7',
+    title: 'Vegetable Sandwich',
+    description: 'Light and healthy snack',
+    calories: 170,
+    imageUrl: 'https://images.unsplash.com/photo-1502741338009-cac2772e18bc',
+    category: 'Snacks',
+  },
 ];
 
-type Category = 'Vegetable' | 'Rice' | 'Fruit';
+type Category = 'All' | 'Vegetable' | 'Rice' | 'Fruit' | 'Eggs' | 'Snacks' | 'Soups';
 
 const Index = () => {
   const [activeCategory, setActiveCategory] = useState<Category>('Vegetable');
@@ -53,7 +77,7 @@ const Index = () => {
   useEffect(() => {
     // In a real app, we would fetch from an API
     setRecipes(mockRecipes);
-    
+
     // Display welcome toast on initial load
     toast({
       title: "Welcome to Springy Salads!",
@@ -61,36 +85,38 @@ const Index = () => {
       duration: 3000,
     });
   }, []);
-  
-  const featuredRecipes = recipes.filter(r => r.category === activeCategory);
-  const popularRecipes = recipes.filter(r => r.id === '3');
+
+  const featuredRecipes =
+    activeCategory === 'All'
+      ? recipes
+      : recipes.filter((r) => r.category === activeCategory);
+
+  const popularRecipes = recipes.filter((r) => r.id === '3');
 
   return (
     <div className="max-w-md mx-auto px-4 pb-20 bg-gray-50 min-h-screen">
       <Navbar />
-      
+
       <div className="mb-6">
         <h1 className="text-4xl font-bold">Pic 2 Plate</h1>
         <p className="text-gray-400">Healthy and nutritious food recipes</p>
       </div>
-      
-      <CategoryFilter 
+
+      <CategoryFilter
         activeCategory={activeCategory}
         setActiveCategory={setActiveCategory}
       />
-      
+
       {featuredRecipes.length > 0 && (
-        <RecipeGrid 
-          recipes={featuredRecipes}
-          category={activeCategory} 
-        />
+        <RecipeGrid recipes={featuredRecipes} category={activeCategory} />
       )}
-      
+
       <PopularRecipes recipes={popularRecipes} />
-      
+
       <CameraButton />
     </div>
   );
 };
 
 export default Index;
+

@@ -1,8 +1,7 @@
 
-import { useState } from 'react';
-import { Salad, UtensilsCrossed, Apple } from 'lucide-react';
+import { Salad, UtensilsCrossed, Apple, Filter, EggFried, Soup, Sandwich } from 'lucide-react';
 
-type Category = 'Vegetable' | 'Rice' | 'Fruit';
+type Category = 'All' | 'Vegetable' | 'Rice' | 'Fruit' | 'Eggs' | 'Snacks' | 'Soups';
 
 interface CategoryFilterProps {
   activeCategory: Category;
@@ -11,9 +10,34 @@ interface CategoryFilterProps {
 
 const CategoryFilter: React.FC<CategoryFilterProps> = ({ activeCategory, setActiveCategory }) => {
   const categories: { name: Category; icon: JSX.Element }[] = [
-    { name: 'Vegetable', icon: <Salad className="w-5 h-5" /> },
-    { name: 'Rice', icon: <UtensilsCrossed className="w-5 h-5" /> },
-    { name: 'Fruit', icon: <Apple className="w-5 h-5" /> },
+    {
+      name: 'All',
+      icon: <Filter className="w-5 h-5" />,
+    },
+    {
+      name: 'Vegetable',
+      icon: <Salad className="w-5 h-5" />,
+    },
+    {
+      name: 'Rice',
+      icon: <UtensilsCrossed className="w-5 h-5" />,
+    },
+    {
+      name: 'Fruit',
+      icon: <Apple className="w-5 h-5" />,
+    },
+    {
+      name: 'Eggs',
+      icon: <EggFried className="w-5 h-5" />,
+    },
+    {
+      name: 'Snacks',
+      icon: <Sandwich className="w-5 h-5" />,
+    },
+    {
+      name: 'Soups',
+      icon: <Soup className="w-5 h-5" />,
+    },
   ];
 
   return (
@@ -22,9 +46,7 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({ activeCategory, setActi
         <button
           key={category.name}
           onClick={() => setActiveCategory(category.name)}
-          className={`category-chip ${
-            activeCategory === category.name ? 'category-chip-active' : 'category-chip-inactive'
-          }`}
+          className={`category-chip ${activeCategory === category.name ? 'category-chip-active' : 'category-chip-inactive'}`}
         >
           {category.icon}
           <span>{category.name}</span>
@@ -35,3 +57,4 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({ activeCategory, setActi
 };
 
 export default CategoryFilter;
+
